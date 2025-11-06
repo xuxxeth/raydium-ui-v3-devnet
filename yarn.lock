@@ -8950,6 +8950,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash@npm:^4":
+  version: 4.17.20
+  resolution: "@types/lodash@npm:4.17.20"
+  checksum: 10c0/98cdd0faae22cbb8079a01a3bb65aa8f8c41143367486c1cbf5adc83f16c9272a2a5d2c1f541f61d0d73da543c16ee1d21cf2ef86cb93cd0cc0ac3bced6dd88f
+  languageName: node
+  linkType: hard
+
 "@types/lodash@npm:^4.14.136":
   version: 4.17.0
   resolution: "@types/lodash@npm:4.17.0"
@@ -9047,6 +9054,15 @@ __metadata:
   dependencies:
     undici-types: "npm:~5.26.4"
   checksum: 10c0/f07fc6636629bf5121d33e532f824470ecd44b14831c486fe11b95aac6c8bf7c838651a4cae82031fbc99888192b84f77e939a2cf27edb20935ed4a6d01d0b5d
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^24.10.0":
+  version: 24.10.0
+  resolution: "@types/node@npm:24.10.0"
+  dependencies:
+    undici-types: "npm:~7.16.0"
+  checksum: 10c0/f82ed7194e16f5590ef7afdc20c6d09068c76d50278b485ede8f0c5749683536e3064ffa8def8db76915196afb3724b854aa5723c64d6571b890b14492943b46
   languageName: node
   linkType: hard
 
@@ -18931,6 +18947,8 @@ __metadata:
     "@types/bn.js": "npm:^5.1.1"
     "@types/cloudflare-turnstile": "npm:^0.2.2"
     "@types/d3": "npm:^7.4.0"
+    "@types/lodash": "npm:^4"
+    "@types/node": "npm:^24.10.0"
     "@types/node-fetch": "npm:^2.6.2"
     "@types/numeral": "npm:^2.0.5"
     "@types/react": "npm:^18.0.0"
@@ -18964,6 +18982,7 @@ __metadata:
     i18next-browser-languagedetector: "npm:^7.0.1"
     immer: "npm:^9.0.15"
     lightweight-charts: "npm:^4.0.1"
+    lodash: "npm:^4.17.21"
     next: "npm:13.3.1"
     prettier: "npm:^2.7.1"
     react: "npm:^18.0.0"
@@ -21578,6 +21597,13 @@ __metadata:
   version: 5.26.5
   resolution: "undici-types@npm:5.26.5"
   checksum: 10c0/bb673d7876c2d411b6eb6c560e0c571eef4a01c1c19925175d16e3a30c4c428181fb8d7ae802a261f283e4166a0ac435e2f505743aa9e45d893f9a3df017b501
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~7.16.0":
+  version: 7.16.0
+  resolution: "undici-types@npm:7.16.0"
+  checksum: 10c0/3033e2f2b5c9f1504bdc5934646cb54e37ecaca0f9249c983f7b1fc2e87c6d18399ebb05dc7fd5419e02b2e915f734d872a65da2e3eeed1813951c427d33cc9a
   languageName: node
   linkType: hard
 

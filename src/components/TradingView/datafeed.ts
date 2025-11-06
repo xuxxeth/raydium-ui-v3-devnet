@@ -76,7 +76,7 @@ export default class DataFeed {
     const decimals = 9 + Math.floor(mintDecimal / 2)
     const symbolB = wSolToSolString(this._mintBInfo?.symbol ?? 'SOL')
     const symbolInfo = {
-      poolId: symbolName,
+      poolId: this._mintInfo.poolId,
       mintA: this._mintInfo?.mint ?? 'mintA',
       mintB: this._mintBInfo?.address || NATIVE_MINT.toBase58(),
       ticker: `${this._mintInfo.symbol}-${symbolB}`,
@@ -103,7 +103,7 @@ export default class DataFeed {
     }
 
     closeSocket(this._connection)
-    startSocket({ connection: this._connection, poolId: symbolName })
+    startSocket({ connection: this._connection, poolId: this._mintInfo.poolId })
 
     console.log('[resolveSymbol]: Symbol resolved', symbolInfo)
     onSymbolResolvedCallback(symbolInfo)

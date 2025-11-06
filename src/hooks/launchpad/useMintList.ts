@@ -46,6 +46,7 @@ export default function useMintList({
   timeTag?: number
 }) {
   const mintHost = useLaunchpadStore((s) => s.mintHost)
+  console.log('useMintList', mintHost)
   const mintType = useMemo(() => {
     const value = propsMintType?.replace('_up', '')
     if (validTypeValue.indexOf(value) === -1) return 'default'

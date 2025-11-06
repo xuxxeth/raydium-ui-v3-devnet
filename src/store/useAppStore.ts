@@ -175,6 +175,7 @@ export const useAppStore = createStore<AppState>(
   (set, get) => ({
     ...appInitState,
     initRaydiumAct: async (payload) => {
+      console.log('initRaydiumAct payload:', payload)
       const action = { type: 'initRaydiumAct' }
       const { initialing, urlConfigs, rpcNodeUrl, jupTokenType, displayTokenSettings } = get()
       if (initialing || !rpcNodeUrl) return

@@ -141,7 +141,8 @@ function useInitConnection(props: SSRData) {
 
   // init raydium sdk or update connection action
   useEffect(() => {
-    if (!connection || connection.rpcEndpoint === defaultEndpoint) return
+    // if (!connection || connection.rpcEndpoint === defaultEndpoint) return
+    if (!connection) return
 
     useAppStore.setState({ connection, signAllTransactions }, false, { type: 'useInitConnection' } as any)
     // raydium sdk initialization can be done with connection only, if url or rpc changed, re-init

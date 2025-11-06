@@ -51,6 +51,7 @@ export default function TVChart({
 }) {
   const { colorMode } = useColorMode()
   const connection = useAppStore((s) => s.connection)
+
   const [reloadChartTag, setReloadChartTag] = useState(0)
   const [refreshChartMint, setRefreshChartMint] = useState('')
   const appTheme = colorMode === 'light' ? AppTheme.Light : AppTheme.Dark
@@ -74,8 +75,9 @@ export default function TVChart({
 
   useEffect(() => {
     if (!poolId || birdeye || !isNeedRefreshData || !connection) return
+    console.log('isNeedRefreshData:', connection)
 
-    const checkData = async () => {
+    const checkData = async () => { 
       try {
         const { data } = await axiosInstance.get(`${useLaunchpadStore.getState().historyHost}/kline?poolId=${poolId}&interval=1m&limit=1`)
         return data.rows.length > 0
@@ -167,7 +169,7 @@ export default function TVChart({
     const options: TradingTerminalWidgetOptions = {
       // debug: true,
       container: id,
-      library_path: '/charting_library/charting_library/',
+      library_path: '/charting_library/',
       custom_css_url: '/tradingview.css',
       autosize: true,
       disabled_features: [
