@@ -567,7 +567,7 @@ export default function Launchpad() {
         actionRef={actionRef}
         sort={sort}
         meta={meta}
-        platformId={platform}
+        platformId={'GiecNPBAk5uGsHeqQJSHVu7yivSBjuL4xWJU6hBq8bn9'}
         showAnimations={showAnimations}
         includeNsfw={isIncludeNsfw}
       />
