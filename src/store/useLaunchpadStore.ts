@@ -8,7 +8,7 @@ import Decimal from 'decimal.js'
 import { TOAST_DURATION, txStatusSubject } from '@/hooks/toast/useTxStatus'
 import { TxCallbackProps } from '@/types/tx'
 import { toastSubject } from '@/hooks/toast/useGlobalToast'
-import { getTxMeta } from './configs/lauchpad'
+import { getTxMeta, PLATFORMID } from './configs/lauchpad'
 import { encodeStr } from '@/utils/common'
 import {
   getPdaLaunchpadAuth,
@@ -188,7 +188,8 @@ export const useLaunchpadStore = createStore<LaunchpadState>((set, get) => ({
       })
       return
     }
-
+    // https://launch-mint-v1-devnet.raydium.io/create/get-random-mint
+    // https://launch-mint-v1-devnet.raydium.io/create/get-random-mint
     const r: {
       id: string
       success: boolean
@@ -205,7 +206,7 @@ export const useLaunchpadStore = createStore<LaunchpadState>((set, get) => ({
         totalLockedAmount: props.totalLockedAmount ? props.totalLockedAmount.toString() : LaunchpadPoolInitParam.totalLockedAmount,
         cliffPeriod: props.cliffPeriod ? props.cliffPeriod.toString() : LaunchpadPoolInitParam.cliffPeriod,
         unlockPeriod: props.unlockPeriod ? props.unlockPeriod.toString() : LaunchpadPoolInitParam.unlockPeriod,
-        platformId: LaunchpadPoolInitParam.platformId,
+        platformId: ToPublicKey(PLATFORMID),
         migrateType: props.migrateType || 'amm',
         description: props.description ?? ''
       },
@@ -325,7 +326,6 @@ export const useLaunchpadStore = createStore<LaunchpadState>((set, get) => ({
       })
       return { txId: '' }
     }
-
     const { execute, extInfo } = await raydium.launchpad.createLaunchpad({
       programId,
       mintA: ToPublicKey(mint),
@@ -336,7 +336,7 @@ export const useLaunchpadStore = createStore<LaunchpadState>((set, get) => ({
       uri,
       migrateType,
       buyAmount,
-      platformId: LaunchpadPoolInitParam.platformId,
+      platformId: new PublicKey(PLATFORMID),
 
       shareFeeReceiver,
       shareFeeRate: shareFeeReceiver ? defaultShareFeeRate : undefined,

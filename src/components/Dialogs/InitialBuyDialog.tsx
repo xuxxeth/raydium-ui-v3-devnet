@@ -17,10 +17,10 @@ import { DialogProps, InitialBuyDialogProps } from '@/constants/dialogs'
 import { colors } from '@/theme/cssVariables'
 import { detectedSeparator, trimTrailZero } from '@/utils/numberish/formatter'
 import { useDisclosure } from '@/hooks/useDelayDisclosure'
-import { useLaunchpadStore } from '@/store'
+import { useAppStore, useLaunchpadStore } from '@/store'
 import shallow from 'zustand/shallow'
-import { LaunchpadPoolInfo, Curve, LaunchpadPoolInitParam } from '@raydium-io/raydium-sdk-v2'
-import { Keypair } from '@solana/web3.js'
+import { LaunchpadPoolInfo, Curve, LaunchpadPoolInitParam, PlatformConfig } from '@raydium-io/raydium-sdk-v2'
+import { Keypair, PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
 import { useEvent } from '@/hooks/useEvent'
@@ -32,6 +32,7 @@ import { useSwapStore } from '@/features/Swap/useSwapStore'
 import { useLaunchPadShareInfo, useReferrerQuery } from '@/features/Launchpad/utils'
 import { ToLaunchPadConfig } from '@/hooks/launchpad/utils'
 import { usePlatformInfo } from '@/hooks/launchpad/usePlatformInfo'
+import { PLATFORMID } from '@/store/configs/lauchpad'
 
 export const InitialBuyDialog = ({ setIsOpen, configInfo, ...mintData }: DialogProps<InitialBuyDialogProps>) => {
   const { colorMode } = useColorMode()
@@ -47,7 +48,7 @@ export const InitialBuyDialog = ({ setIsOpen, configInfo, ...mintData }: DialogP
   const [poolInfo, setPoolInfo] = useState<LaunchpadPoolInfo>()
   const referrerQuery = useReferrerQuery('&')
   const { wallet, shareFeeRate } = useLaunchPadShareInfo()
-  const platformInfo = usePlatformInfo({ platformId: LaunchpadPoolInitParam.platformId })
+  const platformInfo = usePlatformInfo({ platformId: new PublicKey(PLATFORMID)})
 
   const [amount, setAmount] = useState('')
   const amountRef = useRef('')
@@ -56,18 +57,36 @@ export const InitialBuyDialog = ({ setIsOpen, configInfo, ...mintData }: DialogP
   const thousandSeparator = useMemo(() => (detectedSeparator === ',' ? '.' : ','), [])
   const turnstileRef = useRef<ActionRef>(null)
 
+  const raydium = useAppStore(s => s.raydium)
+  const [slot, setSlot] = useState<number>(0)
+  useEffect(() => {
+    const getAccountInfo = async () => {
+      if (raydium ) {
+        const _slot = await raydium?.connection.getSlot() || 0
+        setSlot(_slot)
+      }
+    }
+      
+    getAccountInfo()
+  }, [])
+
   const handleAmountChange = useEvent((val: string) => {
-    if (!poolInfo || !val) return ''
+    if (!poolInfo || !val || !platformInfo || !slot) return ''
+
+    const result = Curve.buyExactIn({
+      poolInfo,
+      amountB: new BN(new Decimal(val).mul(10 ** (poolInfo.mintDecimalsB ?? 9)).toFixed(0)),
+      protocolFeeRate: new BN(configInfo.key.tradeFeeRate),
+      platformFeeRate: platformInfo?.feeRate ?? new BN(1000),
+      curveType: configInfo.key.curveType,
+      shareFeeRate,
+      creatorFeeRate: platformInfo.creatorFeeRate,
+      transferFeeConfigA: undefined,
+      slot: slot,
+    })
     return trimTrailZero(
       new Decimal(
-        Curve.buyExactIn({
-          poolInfo,
-          amountB: new BN(new Decimal(val).mul(10 ** (configInfo.mintInfoB?.decimals ?? 9)).toFixed(0)),
-          protocolFeeRate: new BN(configInfo.key.tradeFeeRate),
-          platformFeeRate: platformInfo?.feeRate ?? new BN(1000),
-          curveType: configInfo.key.curveType,
-          shareFeeRate
-        }).amountA.toString()
+        result?.amountA.amount.toString()
       )
         .div(10 ** poolInfo.mintDecimalsA)
         .toFixed(poolInfo.mintDecimalsA)

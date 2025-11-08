@@ -44,6 +44,7 @@ import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LocalStorageKey } from '@/constants/localStorage'
 import PlatformButton from './components/PlatformButton'
 import { TopMobileCarousel } from './components/TopMobileCarousel'
+import { PLATFORMID } from '@/store/configs/lauchpad'
 
 const DropdownItems = [
   // { label: 'Featured', value: MintSortField.Featured },
@@ -567,7 +568,7 @@ export default function Launchpad() {
         actionRef={actionRef}
         sort={sort}
         meta={meta}
-        platformId={'GiecNPBAk5uGsHeqQJSHVu7yivSBjuL4xWJU6hBq8bn9'}
+        platformId={PLATFORMID}
         showAnimations={showAnimations}
         includeNsfw={isIncludeNsfw}
       />

@@ -59,6 +59,8 @@ import { useDisclosure } from '@/hooks/useDelayDisclosure'
 import useResponsive from '@/hooks/useResponsive'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { LocalStorageKey } from '@/constants/localStorage'
+import ToPublicKey from '@/utils/publicKey'
+import { PLATFORMID } from '@/store/configs/lauchpad'
 
 const supplyList = ['100000000', '1000000000', '10000000000']
 interface CreateMintFormValue {
@@ -106,7 +108,7 @@ enum CreateTokenSteps {
 
 export default function TokenCreate() {
   const { t } = useTranslation()
-  const [value, setValue] = useState(Tab.JustSendIt)
+  const [value, setValue] = useState(Tab.LaunchLab)
   const referrerQuery = useReferrerQuery('?')
   const { colorMode } = useColorMode()
   const isLight = colorMode === 'light'
@@ -117,16 +119,16 @@ export default function TokenCreate() {
 
   const panelItems = useMemo(() => {
     return [
-      {
-        content: <JustSendIt />,
-        label: (
-          <Flex alignItems="center" gap={1}>
-            <Text>JustSendIt</Text>
-            <RocketIcon selected={value === Tab.JustSendIt} />
-          </Flex>
-        ),
-        value: Tab.JustSendIt
-      },
+      // {
+      //   content: <JustSendIt />,
+      //   label: (
+      //     <Flex alignItems="center" gap={1}>
+      //       <Text>JustSendIt</Text>
+      //       <RocketIcon selected={value === Tab.JustSendIt} />
+      //     </Flex>
+      //   ),
+      //   value: Tab.JustSendIt
+      // },
       {
         content: <LaunchLabForm />,
         label: (
@@ -229,7 +231,7 @@ const JustSendIt = () => {
   const [isPostMigrationFeeShare, setIsPostMigrationFeeShare] = useState(true)
   const [migrateType, setMigrateType] = useState<'amm' | 'cpmm'>('cpmm')
 
-  const platformInfo = usePlatformInfo({ platformId: LaunchpadPoolInitParam.platformId })
+  const platformInfo = usePlatformInfo({ platformId: ToPublicKey(PLATFORMID) })
 
   const schema = useMemo(
     () =>
@@ -636,7 +638,7 @@ const LaunchLabForm = () => {
   const [data, setData] = useState<any[]>([])
   const decimalA = 6
 
-  const platformInfo = usePlatformInfo({ platformId: LaunchpadPoolInitParam.platformId })
+  const platformInfo = usePlatformInfo({ platformId: ToPublicKey(PLATFORMID) })
 
   useEffect(() => {
     setConfigInfo((val) => val ?? configList[0])
