@@ -367,7 +367,7 @@ export const useLaunchpadStore = createStore<LaunchpadState>((set, get) => ({
     let meta = getTxMeta({
       action: 'buy',
       values: {
-        amountA: new Decimal(extInfo.outAmount.toString())
+        amountA: new Decimal(extInfo.swapInfo.amountB.toString())
           .div(10 ** decimals)
           .toDecimalPlaces(decimals)
           .toString(),
@@ -383,6 +383,7 @@ export const useLaunchpadStore = createStore<LaunchpadState>((set, get) => ({
     let txId = ''
     const isV0Tx = txVersion === TxVersion.V0
     try {
+      
       const { signedTxs } = await execute({ notSendToRpc: true, sequentially: true })
       const { data } = await axios.post(
         `${get().mintHost}/create/sendTransaction`,
@@ -438,7 +439,7 @@ export const useLaunchpadStore = createStore<LaunchpadState>((set, get) => ({
       meta = getTxMeta({
         action: 'launchBuy',
         values: {
-          amountA: new Decimal(extInfo.outAmount.toString())
+          amountA: new Decimal(extInfo.swapInfo.amountB.toString())
             .div(10 ** decimals)
             .toDecimalPlaces(decimals)
             .toString(),
@@ -565,12 +566,25 @@ export const useLaunchpadStore = createStore<LaunchpadState>((set, get) => ({
     onError,
     onFinally
   }) => {
+
     const { raydium, txVersion } = useAppStore.getState()
     if (!raydium) return ''
+
+    console.log('launchpad buyAct:', {
+      programId: programId.toBase58(),
+      mint: mintInfo.mint,
+      buyAmount: buyAmount.toString(),
+      minMintAAmount: minMintAAmount?.toString(),
+      slippage: slippage?.toString(),
+      mintB: mintB?.toBase58(),
+      shareFeeReceiver: shareFeeReceiver?.toBase58(),
+      platformFeeRate: platformFeeRate?.toString()
+    })
 
     const { execute, extInfo } = await raydium.launchpad.buyToken({
       programId,
       mintA: ToPublicKey(mintInfo.mint),
+      mintAProgram: new PublicKey(mintInfo.mintB.programId),
       txVersion,
       buyAmount,
       slippage,
@@ -586,7 +600,7 @@ export const useLaunchpadStore = createStore<LaunchpadState>((set, get) => ({
     const meta = getTxMeta({
       action: 'buy',
       values: {
-        amountA: new Decimal((minMintAAmount ?? extInfo.outAmount).toString())
+        amountA: new Decimal((minMintAAmount ?? extInfo.amountB).toString())
           .div(10 ** Number(mintInfo.decimals))
           .toDecimalPlaces(Number(mintInfo.decimals))
           .toString(),
@@ -599,6 +613,9 @@ export const useLaunchpadStore = createStore<LaunchpadState>((set, get) => ({
       }
     })
 
+    // const sentInfo = await execute({ sendAndConfirm: true })
+    // console.log(sentInfo)
+    // return sentInfo.txId
     return execute()
       .then(({ txId, signedTx }) => {
         txStatusSubject.next({

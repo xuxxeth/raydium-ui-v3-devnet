@@ -11,7 +11,8 @@ import {
   TxVersion,
   TokenInfo,
   DEV_LAUNCHPAD_PROGRAM,
-  DEV_LAUNCHPAD_AUTH
+  DEV_LAUNCHPAD_AUTH,
+  DEVNET_PROGRAM_ID
 } from '@raydium-io/raydium-sdk-v2'
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { Wallet } from '@solana/wallet-adapter-react'
@@ -23,6 +24,8 @@ import { isValidUrl } from '@/utils/url'
 import { setStorageItem, getStorageItem } from '@/utils/localStorage'
 import { retry, isProdEnv } from '@/utils/common'
 import { compare } from 'compare-versions'
+
+console.log('DEV_LAUNCHPAD_PROGRAM:', DEVNET_PROGRAM_ID.LAUNCHPAD_PROGRAM.toBase58(), DEV_LAUNCHPAD_PROGRAM.toBase58())
 
 export const defaultNetWork = WalletAdapterNetwork.Devnet // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
 export const defaultEndpoint = clusterApiUrl(defaultNetWork) // You can also provide a custom RPC endpoint
@@ -140,12 +143,13 @@ const appInitState = {
   aprMode: 'M' as 'M' | 'D',
   rpcs: [],
   urlConfigs: API_URLS,
-  programIdConfig: ALL_PROGRAM_ID,
-  // programIdConfig: {
-  //   ...ALL_PROGRAM_ID,
-  //   LAUNCHPAD_PROGRAM: DEV_LAUNCHPAD_PROGRAM,
-  //   LAUNCHPAD_AUTH: DEV_LAUNCHPAD_AUTH
-  // },
+  // programIdConfig: ALL_PROGRAM_ID,
+  programIdConfig: {
+    ...ALL_PROGRAM_ID,
+    // LAUNCHPAD_PROGRAM: DEVNET_PROGRAM_ID.LAUNCHPAD_PROGRAM ,
+    LAUNCHPAD_PROGRAM: new PublicKey('DRay6fNdQ5J82H7xV6uq2aV3mNrUZ1J4PgSKsWgptcm6') ,
+    LAUNCHPAD_AUTH: DEV_LAUNCHPAD_AUTH
+  },
   jupTokenType: JupTokenType.Strict,
   displayTokenSettings: {
     official: true,
@@ -186,16 +190,24 @@ export const useAppStore = createStore<AppState>(
       const raydium = await Raydium.load({
         ...payload,
         connection,
+        // urlConfigs: {
+        //   ...urlConfigs,
+        //   BASE_HOST: !isProdEnv() ? getStorageItem('_r_api_host_') || urlConfigs.BASE_HOST : urlConfigs.BASE_HOST
+        // },
         urlConfigs: {
-          ...urlConfigs,
-          BASE_HOST: !isProdEnv() ? getStorageItem('_r_api_host_') || urlConfigs.BASE_HOST : urlConfigs.BASE_HOST
+          // ...DEV_API_URLS,
+          BASE_HOST: 'https://api-v3-devnet.raydium.io',
+          OWNER_BASE_HOST: 'https://owner-v1-devnet.raydium.io',
+          SWAP_HOST: 'https://transaction-v1-devnet.raydium.io',
+          CPMM_LOCK: 'https://dynamic-ipfs-devnet.raydium.io/lock/cpmm/position',
         },
         jupTokenType,
         logRequests: !isDev,
         disableFeatureCheck: true,
         loopMultiTxStatus: true,
         blockhashCommitment: 'finalized',
-        cluster: connection.rpcEndpoint === clusterApiUrl('devnet') ? 'devnet' : 'mainnet',
+        // cluster: connection.rpcEndpoint === clusterApiUrl('devnet') ? 'devnet' : 'mainnet',
+        cluster: 'devnet',
         apiRequestTimeout: 20 * 1000
       })
       useTokenStore.getState().extraLoadedTokenList.forEach((t) => {
@@ -305,9 +317,18 @@ export const useAppStore = createStore<AppState>(
       if (rpcLoading) return
       rpcLoading = true
       try {
-        const {
-          data: { rpcs }
-        } = await axios.get<{ rpcs: RpcItem[] }>(urlConfigs.BASE_HOST + urlConfigs.RPCS)
+        // const {
+        //   data: { rpcs }
+        // } = await axios.get<{ rpcs: RpcItem[] }>(urlConfigs.BASE_HOST + urlConfigs.RPCS)
+        const rpcs = [
+          {
+            "url": "https://devnet.helius-rpc.com/?api-key=236e0b21-f95c-4886-8402-9e47e76beded",
+            "batch": true,
+            "name": "Helius",
+            "weight": 10
+          }
+        ]
+        console.log('fetchRpcsAct rpcs:', rpcs)
         set({ rpcs }, false, { type: 'fetchRpcsAct' })
         const localRpcNode: { rpcNode?: RpcItem; url?: string } = JSON.parse(
           getStorageItem(isProdEnv() ? RPC_URL_PROD_KEY : RPC_URL_KEY) || '{}'
@@ -339,6 +360,8 @@ export const useAppStore = createStore<AppState>(
       }
     },
     setRpcUrlAct: async (url, skipToast, skipError) => {
+      console.log('setRpcUrlAct url:', url, get().rpcNodeUrl)
+
       if (url === get().rpcNodeUrl) {
         toastSubject.next({
           status: 'info',

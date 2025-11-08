@@ -14,7 +14,8 @@ export const validateTxData = async (props: { data: string[]; preData: string[];
     const deviceType = deviceInfo.device.type || 'pc'
     const adapter = useAppStore.getState().wallet?.adapter
     const data: CheckTxResponse = await axios.post(
-      `${useAppStore.getState().urlConfigs.SERVICE_1_BASE_HOST}/check-tx`,
+      // `${useAppStore.getState().urlConfigs.SERVICE_1_BASE_HOST}/check-tx`,
+      `/api/raydium/check-tx`,
       {
         walletName: adapter?.name || 'unknown',
         metaData: adapter?.name === 'WalletConnect' ? (adapter as any)?._wallet._session?.peer?.metadata?.name : undefined,

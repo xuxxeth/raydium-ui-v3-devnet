@@ -1,8 +1,11 @@
-import { useLaunchpadStore } from '@/store'
+import { useAppStore, useLaunchpadStore } from '@/store'
 import useSWR from 'swr'
 import axios from '@/api/axios'
 import { MintInfo } from '@/features/Launchpad/type'
 import ToPublicKey from '@/utils/publicKey'
+import { useEffect, useState } from 'react'
+import { PublicKey } from '@solana/web3.js'
+import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
 
 export const mintInfoFetcher = (
   url: string
@@ -40,6 +43,18 @@ export default function useMintInfo({
     focusThrottleInterval: refreshInterval,
     keepPreviousData: true
   })
+  // const [mintInfo, setMintInfo] = useState<ApiV3Token | undefined>()
+  // const raydium = useAppStore(s => s.raydium)
+  // useEffect(() => {
+  //   const getTokenInfo = async () => {
+  //     if (raydium && mints[0]) {
+  //       const mintInfo = await raydium.token.getTokenInfo(new PublicKey(mints[0]))
+  //       setMintInfo(mintInfo)
+  //     }
+      
+  //   }
+  //   getTokenInfo()
+  // }, [raydium, mints])
 
   const isEmptyResult = !!mintQuery && !rest.isLoading && !(data?.data.rows.length && !rest.error)
 

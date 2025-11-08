@@ -16,7 +16,7 @@ import Transactions from './components/Transactions'
 import Holders from './components/Holders'
 import ConnectedButton from '@/components/ConnectedButton'
 import useCheckToken from '@/hooks/launchpad/useCheckToken'
-import { getATAAddress, getPdaLaunchpadVaultId, LaunchpadPoolInfo, Curve } from '@raydium-io/raydium-sdk-v2'
+import { getATAAddress, getPdaLaunchpadVaultId, LaunchpadPoolInfo, Curve, PlatformConfig } from '@raydium-io/raydium-sdk-v2'
 import { PublicKey } from '@solana/web3.js'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import usePoolRpcInfo, { getMarketCapData } from '@/hooks/launchpad/usePoolRpcInfo'
@@ -308,6 +308,28 @@ const TokenDetail = () => {
     },
     [hiddenMintsMap, setHiddenMintsMap]
   )
+
+  const raydium = useAppStore(s => s.raydium)
+  const [platformInfo, setPlatformInfo] = useState<any>()
+  const [epochInfo, setEpochInfo] = useState<any>()
+  const [slot, setSlot] = useState<number>(0)
+  useEffect(() => {
+    const getAccountInfo = async () => {
+      if (raydium && poolInfo) {
+        const data = await raydium.connection.getAccountInfo(poolInfo.platformId)
+        const platformInfo = PlatformConfig.decode(data!.data)
+        setPlatformInfo(platformInfo)
+
+        const epochInfo = await raydium.connection.getEpochInfo()
+        setEpochInfo(epochInfo)
+
+        const _slot = await raydium?.connection.getSlot() || 0
+        setSlot(_slot)
+      }
+    }
+      
+    getAccountInfo()
+  }, [poolInfo])
 
   return (
     <Grid
@@ -612,6 +634,10 @@ const TokenDetail = () => {
             onChain={onChain}
             isMigrating={isMigrating}
             isLanded={isLanded}
+            platformInfo={platformInfo}
+            epochInfo={epochInfo}
+            slot={slot}
+
           />
           <Flex px={4} py="10px" borderRadius="8px" background="#8C6EEF33" alignItems="center" gap={8}>
             <Text

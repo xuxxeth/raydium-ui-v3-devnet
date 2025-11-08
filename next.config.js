@@ -39,7 +39,12 @@ module.exports = {
         source: '/',
         destination: '/swap/',
         permanent: false
-      }
+      },
+      {
+        source: '/api/raydium/:path*',
+        destination: 'https://service-v1.raydium.io/:path*',
+        permanent: false
+      },
     ]
   }
 }

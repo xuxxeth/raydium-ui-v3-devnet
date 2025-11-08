@@ -6063,9 +6063,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@raydium-io/raydium-sdk-v2@npm:0.1.139-alpha":
-  version: 0.1.139-alpha
-  resolution: "@raydium-io/raydium-sdk-v2@npm:0.1.139-alpha"
+"@raydium-io/raydium-sdk-v2@npm:0.2.25-alpha":
+  version: 0.2.25-alpha
+  resolution: "@raydium-io/raydium-sdk-v2@npm:0.2.25-alpha"
   dependencies:
     "@solana/buffer-layout": "npm:^4.0.1"
     "@solana/spl-token": "npm:^0.4.8"
@@ -6079,7 +6079,7 @@ __metadata:
     lodash: "npm:^4.17.21"
     toformat: "npm:^2.0.0"
     tsconfig-paths: "npm:^4.2.0"
-  checksum: 10c0/530e5ce6af43b48722a9aac635d7dd9ebe70b3f414446d0d3652cf27f9d09babc9259ba2c88a5b8ed63be1de1320bd1fd3d148dfd24941937bef2ef7c86bdcd0
+  checksum: 10c0/ec20c87a82f0cae2e3f74b55380605b29ae10cd83b1ad072880ee8d1f8199c01e734329136b82a3205e13b719a68a441b061455b2061971cbda51c910f57852d
   languageName: node
   linkType: hard
 
@@ -18929,7 +18929,7 @@ __metadata:
     "@moonpay/moonpay-js": "npm:^0.6.1"
     "@next/third-parties": "npm:^14.2.5"
     "@project-serum/serum": "npm:^0.13.65"
-    "@raydium-io/raydium-sdk-v2": "npm:0.1.139-alpha"
+    "@raydium-io/raydium-sdk-v2": "npm:0.2.25-alpha"
     "@sentry/nextjs": "npm:^8.26.0"
     "@solana/buffer-layout": "npm:^4.0.1"
     "@solana/spl-token": "npm:^0.4.8"

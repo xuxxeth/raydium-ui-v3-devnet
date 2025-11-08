@@ -21,7 +21,8 @@ export default function retryTx({ tx, id }: { tx: Transaction | VersionedTransac
     try {
       axios
         .post(
-          `${urlConfigs.SERVICE_1_BASE_HOST}/send-tx`,
+          // `${urlConfigs.SERVICE_1_BASE_HOST}/send-tx`,
+          `/api/raydium/send-tx`,
           {
             data: txToBase64(tx),
             walletName: useAppStore.getState().wallet?.adapter.name || '',

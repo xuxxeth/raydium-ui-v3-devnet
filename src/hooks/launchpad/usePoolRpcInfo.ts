@@ -32,98 +32,118 @@ const fetcher = ([connection, poolId]: [Connection, string]) => connection.getAc
 
 export default function usePoolRpcInfo({ poolId, mintInfo, refreshInterval = 10 * 1000, notRefresh }: Props) {
   const [connection, programId] = useAppStore((s) => [s.connection, s.programIdConfig.LAUNCHPAD_PROGRAM], shallow)
+  const raydium = useAppStore(s => s.raydium)
   const refreshPoolMint = useLaunchpadStore((s) => s.refreshPoolMint)
   const [onChain, setOnChain] = useState(false)
   const [configInfo, setConfigInfo] = useState<(LaunchpadConfigInfo & { configId: PublicKey }) | undefined>()
   const shouldFetch = !!poolId && !!connection
 
   const interval = onChain ? refreshInterval : 3 * 1000
+  const [isLoading, setIsLoading] = useState(false)
+  const [_poolInfo, setPoolInfo] = useState<LaunchpadPoolInfo & {
+        programId: PublicKey;
+        configInfo: LaunchpadConfigInfo;
+    } | undefined>()
 
-  const { data, isLoading, error, ...rest } = useSWR(shouldFetch ? [connection, poolId] : null, fetcher, {
-    revalidateIfStale: !notRefresh,
-    revalidateOnFocus: !notRefresh,
-    revalidateOnReconnect: !notRefresh,
-    dedupingInterval: notRefresh ? 0 : interval,
-    focusThrottleInterval: notRefresh ? 0 : interval,
-    refreshInterval: notRefresh ? 0 : interval,
-    keepPreviousData: true
-  })
+  useEffect(() => {
+    if (raydium && poolId) {
+      setIsLoading(true)
+      raydium?.launchpad.getRpcPoolInfo({ poolId: ToPublicKey(poolId) })
+        .then(res => {
+          setIsLoading(false)
+          setPoolInfo(res)
+        })
+    }
+  }, [raydium, poolId])
+  
+  // const { data, error, ...rest } = useSWR(shouldFetch ? [connection, poolId] : null, fetcher, {
+  //   revalidateIfStale: !notRefresh,
+  //   revalidateOnFocus: !notRefresh,
+  //   revalidateOnReconnect: !notRefresh,
+  //   dedupingInterval: notRefresh ? 0 : interval,
+  //   focusThrottleInterval: notRefresh ? 0 : interval,
+  //   refreshInterval: notRefresh ? 0 : interval,
+  //   keepPreviousData: true
+  // })
 
   const isFetchDone = shouldFetch && !isLoading
 
-  const poolInfo: (LaunchpadPoolInfo & { price: Decimal; fake?: boolean }) | undefined = useMemo(() => {
-    if (isFetchDone && !data) {
-      setOnChain(false)
-      if (mintInfo) {
-        const supply = new BN(mintInfo.supply * 10 ** Number(mintInfo.decimals))
-        const curve = Curve.getCurve(mintInfo.configInfo.curveType)
-        const initParam = curve.getInitParam({
-          supply,
-          totalFundRaising: new BN(mintInfo.totalFundRaisingB),
-          totalSell: new BN(mintInfo.totalSellA),
-          totalLockedAmount: new BN(mintInfo.totalLockedAmount),
-          migrateFee: new BN(mintInfo.configInfo.migrateFee)
-        })
-        // mint B check
-        const poolId = getPdaLaunchpadPoolId(programId, ToPublicKey(mintInfo.mint), NATIVE_MINT).publicKey
-        const poolInfo = {
-          bump: 255,
-          status: 0,
-          epoch: new BN(859),
-          decimals: parseFloat(mintInfo.decimals),
-          supply,
-          totalSellA: new BN(mintInfo.totalSellA),
-          virtualA: initParam.a,
-          virtualB: initParam.b,
-          realA: LaunchpadPoolInitParam.realA,
-          realB: LaunchpadPoolInitParam.realB,
-          tradeFee: new BN(0),
-          migrateFee: new BN(mintInfo.configInfo.migrateFee),
-          platformFee: new BN(mintInfo.platformInfo.feeRate),
-          platformId: ToPublicKey(mintInfo.platformInfo.pubKey),
-          mintA: ToPublicKey(mintInfo.mint),
-          mintB: ToPublicKey(mintInfo.mintB.address),
-          mintDecimalsA: parseFloat(mintInfo.decimals),
-          mintDecimalsB: mintInfo.mintB.decimals, // TBD
-          migrateType: 0,
-          configId: ToPublicKey(mintInfo.configId),
-          vaultA: getPdaLaunchpadVaultId(programId, poolId, ToPublicKey(mintInfo.mint)).publicKey,
-          vaultB: getPdaLaunchpadVaultId(programId, poolId, ToPublicKey(mintInfo.mintB.address)).publicKey,
-          creator: ToPublicKey(mintInfo.creator),
-          totalFundRaisingB: LaunchpadPoolInitParam.totalFundRaisingB,
-          protocolFee: mintInfo.configInfo?.tradeFeeRate ? new BN(mintInfo.configInfo.tradeFeeRate) : new BN(0),
-          vestingSchedule: {
-            totalLockedAmount: new BN(0),
-            cliffPeriod: new BN(0),
-            unlockPeriod: new BN(0),
-            startTime: new BN(0),
-            totalAllocatedShare: new BN(0)
-          },
-          fake: true
-        }
+  const poolInfo: (LaunchpadPoolInfo & {
+        programId: PublicKey;
+        configInfo: LaunchpadConfigInfo;
+    } & { price: Decimal; fake?: boolean }) | undefined = useMemo(() => {
+    // if (isFetchDone && !_poolInfo) {
+    //   setOnChain(false)
+    //   if (mintInfo) {
+    //     const supply = new BN(mintInfo.supply * 10 ** Number(mintInfo.decimals))
+    //     const curve = Curve.getCurve(mintInfo.configInfo.curveType)
+    //     const initParam = curve.getInitParam({
+    //       supply,
+    //       totalFundRaising: new BN(mintInfo.totalFundRaisingB),
+    //       totalSell: new BN(mintInfo.totalSellA),
+    //       totalLockedAmount: new BN(mintInfo.totalLockedAmount),
+    //       migrateFee: new BN(mintInfo.configInfo.migrateFee)
+    //     })
+    //     // mint B check
+    //     const poolId = getPdaLaunchpadPoolId(programId, ToPublicKey(mintInfo.mint), NATIVE_MINT).publicKey
+    //     const poolInfo = {
+    //       bump: 255,
+    //       status: 0,
+    //       epoch: new BN(859),
+    //       decimals: parseFloat(mintInfo.decimals),
+    //       supply,
+    //       totalSellA: new BN(mintInfo.totalSellA),
+    //       virtualA: initParam.a,
+    //       virtualB: initParam.b,
+    //       realA: LaunchpadPoolInitParam.realA,
+    //       realB: LaunchpadPoolInitParam.realB,
+    //       tradeFee: new BN(0),
+    //       migrateFee: new BN(mintInfo.configInfo.migrateFee),
+    //       platformFee: new BN(mintInfo.platformInfo.feeRate),
+    //       platformId: ToPublicKey(mintInfo.platformInfo.pubKey),
+    //       mintA: ToPublicKey(mintInfo.mint),
+    //       mintB: ToPublicKey(mintInfo.mintB.address),
+    //       mintDecimalsA: parseFloat(mintInfo.decimals),
+    //       mintDecimalsB: mintInfo.mintB.decimals, // TBD
+    //       migrateType: 0,
+    //       configId: ToPublicKey(mintInfo.configId),
+    //       vaultA: getPdaLaunchpadVaultId(programId, poolId, ToPublicKey(mintInfo.mint)).publicKey,
+    //       vaultB: getPdaLaunchpadVaultId(programId, poolId, ToPublicKey(mintInfo.mintB.address)).publicKey,
+    //       creator: ToPublicKey(mintInfo.creator),
+    //       totalFundRaisingB: LaunchpadPoolInitParam.totalFundRaisingB,
+    //       protocolFee: mintInfo.configInfo?.tradeFeeRate ? new BN(mintInfo.configInfo.tradeFeeRate) : new BN(0),
+    //       vestingSchedule: {
+    //         totalLockedAmount: new BN(0),
+    //         cliffPeriod: new BN(0),
+    //         unlockPeriod: new BN(0),
+    //         startTime: new BN(0),
+    //         totalAllocatedShare: new BN(0)
+    //       },
+    //       fake: true
+    //     }
 
-        setConfigInfo({
-          ...ToLaunchPadConfig(mintInfo.configInfo),
-          configId: ToPublicKey(mintInfo.configId)
-        })
+    //     setConfigInfo({
+    //       ...ToLaunchPadConfig(mintInfo.configInfo),
+    //       configId: ToPublicKey(mintInfo.configId)
+    //     })
+    //     // @ts-ignore
+    //     return {
+    //       ...poolInfo,
+    //       price: Curve.getPrice({
+    //         poolInfo,
+    //         curveType: mintInfo.configInfo.curveType,
+    //         decimalA: poolInfo.mintDecimalsA,
+    //         decimalB: poolInfo.mintDecimalsB
+    //       })
+    //     } as LaunchpadPoolInfo & { price: Decimal }
+    //   }
 
-        return {
-          ...poolInfo,
-          price: Curve.getPrice({
-            poolInfo,
-            curveType: mintInfo.configInfo.curveType,
-            decimalA: poolInfo.mintDecimalsA,
-            decimalB: poolInfo.mintDecimalsB
-          })
-        } as LaunchpadPoolInfo & { price: Decimal }
-      }
+    //   setConfigInfo(undefined)
+    //   return undefined
+    // }
 
-      setConfigInfo(undefined)
-      return undefined
-    }
-
-    if (data) {
-      const info = LaunchpadPool.decode(data.data)
+    if (_poolInfo) {
+      const info = _poolInfo
       setOnChain(true)
       return {
         ...info,
@@ -135,7 +155,7 @@ export default function usePoolRpcInfo({ poolId, mintInfo, refreshInterval = 10 
         })
       }
     }
-  }, [data, mintInfo?.mint, programId, isFetchDone])
+  }, [_poolInfo, mintInfo?.mint, programId, isFetchDone])
 
   const configId = poolInfo ? poolInfo.configId : mintInfo ? mintInfo?.configId : undefined
 
@@ -161,25 +181,23 @@ export default function usePoolRpcInfo({ poolId, mintInfo, refreshInterval = 10 
       })
   }, [configId, connection, poolId, mintInfo?.configInfo.pubKey])
 
-  const isEmptyResult = !isLoading && !(data && !error)
+  const isEmptyResult = !isLoading && !_poolInfo
 
   const isNeedRefresh = isEmptyResult && refreshPoolMint && refreshPoolMint === mintInfo?.mint
-  useEffect(() => {
-    if (!isNeedRefresh) return
-    const interval = window.setInterval(() => {
-      rest.mutate()
-    }, 1500)
-    return () => window.clearInterval(interval)
-  }, [refreshPoolMint, rest.mutate])
+  // useEffect(() => {
+  //   if (!isNeedRefresh) return
+  //   const interval = window.setInterval(() => {
+      
+  //   }, 1500)
+  //   return () => window.clearInterval(interval)
+  // }, [refreshPoolMint])
 
   return {
     data: poolInfo,
     configInfo,
     onChain,
     isLoading,
-    error,
     isEmptyResult,
-    ...rest
   }
 }
 

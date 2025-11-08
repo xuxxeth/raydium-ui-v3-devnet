@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Box, Flex, Button, Text, useColorMode, CircularProgress } from '@chakra-ui/react'
 import { NumericFormat } from 'react-number-format'
-import { ApiV3Token } from '@raydium-io/raydium-sdk-v2'
+import { ApiV3Token, PlatformConfig } from '@raydium-io/raydium-sdk-v2'
 import { colors } from '@/theme/cssVariables/colors'
 import { detectedSeparator, formatCurrency, trimTrailZero } from '@/utils/numberish/formatter'
 import { SegmentedButton, OrderSide } from '@/components/SegmentedButton'
@@ -13,7 +13,7 @@ import { Curve } from '@raydium-io/raydium-sdk-v2'
 import { LaunchpadConfigInfo, LaunchpadPoolInfo } from '@/hooks/launchpad/usePoolRpcInfo'
 import BN from 'bn.js'
 import Decimal from 'decimal.js'
-import { useLaunchpadStore, useTokenAccountStore } from '@/store'
+import { useAppStore, useLaunchpadStore, useTokenAccountStore } from '@/store'
 import shallow from 'zustand/shallow'
 import { useDisclosure } from '@/hooks/useDelayDisclosure'
 import { MintInfo } from '../type'
@@ -31,6 +31,7 @@ import ConnectedButton from '@/components/ConnectedButton'
 import { isSolWSol } from '@/utils/token'
 import { useLaunchPadShareInfo } from '../utils'
 import { ToLaunchPadConfig } from '@/hooks/launchpad/utils'
+import { PublicKey } from '@solana/web3.js'
 
 export default function TradeBox({
   poolInfo,
@@ -39,15 +40,25 @@ export default function TradeBox({
   configInfo,
   onChain,
   isMigrating,
-  isLanded
+  isLanded,
+  platformInfo,
+  epochInfo,
+  slot
 }: {
-  poolInfo?: LaunchpadPoolInfo & { fake?: boolean }
+  poolInfo?: LaunchpadPoolInfo & {
+        programId: PublicKey;
+        configInfo: LaunchpadConfigInfo;
+    } & { fake?: boolean }
   mintInfo?: MintInfo
   mintBInfo?: ApiV3Token
   configInfo?: LaunchpadConfigInfo
   onChain: boolean
   isMigrating?: boolean
   isLanded?: boolean
+
+  platformInfo?: any
+  epochInfo?: any
+  slot?: number
 }) {
   const thousandSeparator = useMemo(() => (detectedSeparator === ',' ? '.' : ','), [])
   const { isOpen: isSending, onOpen: onSending, onClose: offSending } = useDisclosure()
@@ -136,24 +147,56 @@ export default function TradeBox({
     }))
   }, [swapData?.outputAmount, isLanded, isBuy, outputDecimal])
 
+
+
   const calculateAnother = useEvent((val: string, side: OrderSide) => {
     const isBuy = side === OrderSide.BUY
-    if (!poolInfo || !configInfo || isMigrating) return { amount: '', mintAmount: '' }
+    console.log('poolInfo: ', poolInfo)
+    if (!poolInfo || !configInfo || isMigrating || !mintInfo || !platformInfo || !epochInfo || !slot) return { amount: '', mintAmount: '' }
     if (isBuy) {
+      console.log('poolInfo:', poolInfo)
+      // const result = Curve.buyExactIn({
+      //   poolInfo,
+      //   amountB: new BN(new Decimal(val).mul(10 ** mintBDecimal).toFixed(0)),
+      //   protocolFeeRate: configInfo.tradeFeeRate,
+      //   platformFeeRate: new BN(mintInfo?.platformInfo.feeRate ?? 0),
+      //   curveType: configInfo.curveType,
+      //   shareFeeRate
+      // })
+      // @ts-ignore
       const result = Curve.buyExactIn({
         poolInfo,
         amountB: new BN(new Decimal(val).mul(10 ** mintBDecimal).toFixed(0)),
-        protocolFeeRate: configInfo.tradeFeeRate,
-        platformFeeRate: new BN(mintInfo?.platformInfo.feeRate ?? 0),
-        curveType: configInfo.curveType,
-        shareFeeRate
+        protocolFeeRate: poolInfo.configInfo.tradeFeeRate,
+        platformFeeRate: platformInfo.feeRate,
+        curveType: poolInfo.configInfo.curveType,
+        shareFeeRate,
+        creatorFeeRate: platformInfo.creatorFeeRate,
+        // transferFeeConfigA: mintInfo.extensions.feeConfig
+        //   ? {
+        //       transferFeeConfigAuthority: PublicKey.default,
+        //       withdrawWithheldAuthority: PublicKey.default,
+        //       withheldAmount: BigInt(0),
+        //       olderTransferFee: {
+        //         epoch: BigInt(mintInfo.extensions.feeConfig.olderTransferFee.epoch ?? epochInfo?.epoch ?? 0),
+        //         maximumFee: BigInt(mintInfo.extensions.feeConfig.olderTransferFee.maximumFee),
+        //         transferFeeBasisPoints: mintInfo.extensions.feeConfig.olderTransferFee.transferFeeBasisPoints,
+        //       },
+        //       newerTransferFee: {
+        //         epoch: BigInt(mintInfo.extensions.feeConfig.newerTransferFee.epoch ?? epochInfo?.epoch ?? 0),
+        //         maximumFee: BigInt(mintInfo.extensions.feeConfig.newerTransferFee.maximumFee),
+        //         transferFeeBasisPoints: mintInfo.extensions.feeConfig.newerTransferFee.transferFeeBasisPoints,
+        //       },
+        //     }
+        //   : undefined,
+        slot: slot,
       })
 
       return {
-        amount: trimTrailZero(new Decimal(result.amountA.toString()).div(10 ** mintADecimal).toFixed(mintADecimal)) ?? '',
+        amount: trimTrailZero(new Decimal(result.amountA.amount.toString()).div(10 ** mintADecimal).toFixed(mintADecimal)) ?? '',
         mintAmount:
           trimTrailZero(
-            new Decimal(result.amountA.toString())
+            new Decimal(result.amountA.amount.toString())
               .div(10 ** mintADecimal)
               .mul(1 - slippage)
               .toFixed(mintADecimal)
@@ -161,13 +204,41 @@ export default function TradeBox({
       }
     }
 
+    // const result = Curve.sellExactIn({
+    //   poolInfo,
+    //   amountA: new BN(new Decimal(val).mul(10 ** mintADecimal).toFixed(0)),
+    //   protocolFeeRate: configInfo.tradeFeeRate,
+    //   platformFeeRate: new BN(mintInfo?.platformInfo.feeRate ?? 0),
+    //   curveType: configInfo.curveType,
+    //   shareFeeRate
+    // })
     const result = Curve.sellExactIn({
       poolInfo,
       amountA: new BN(new Decimal(val).mul(10 ** mintADecimal).toFixed(0)),
-      protocolFeeRate: configInfo.tradeFeeRate,
-      platformFeeRate: new BN(mintInfo?.platformInfo.feeRate ?? 0),
-      curveType: configInfo.curveType,
-      shareFeeRate
+      protocolFeeRate: poolInfo.configInfo.tradeFeeRate,
+      platformFeeRate: platformInfo.feeRate,
+      curveType: poolInfo.configInfo.curveType,
+      shareFeeRate,
+      creatorFeeRate: platformInfo.creatorFeeRate,
+      slot: slot,
+      transferFeeConfigA: undefined
+      // mintInfo.extensions.feeConfig
+      //   ? {
+      //       transferFeeConfigAuthority: PublicKey.default,
+      //       withdrawWithheldAuthority: PublicKey.default,
+      //       withheldAmount: BigInt(0),
+      //       olderTransferFee: {
+      //         epoch: BigInt(mintInfo.extensions.feeConfig.olderTransferFee.epoch ?? epochInfo?.epoch ?? 0),
+      //         maximumFee: BigInt(mintInfo.extensions.feeConfig.olderTransferFee.maximumFee),
+      //         transferFeeBasisPoints: mintInfo.extensions.feeConfig.olderTransferFee.transferFeeBasisPoints,
+      //       },
+      //       newerTransferFee: {
+      //         epoch: BigInt(mintInfo.extensions.feeConfig.newerTransferFee.epoch ?? epochInfo?.epoch ?? 0),
+      //         maximumFee: BigInt(mintInfo.extensions.feeConfig.newerTransferFee.maximumFee),
+      //         transferFeeBasisPoints: mintInfo.extensions.feeConfig.newerTransferFee.transferFeeBasisPoints,
+      //       },
+      //     }
+      //   : undefined,
     })
 
     return {
@@ -211,28 +282,35 @@ export default function TradeBox({
     onLoading()
     try {
       const onConfirmed = () => setAmount({ amountIn: '', amountOut: '', minAmountOut: '' })
+      console.log('mintInfo:', mintInfo)
+      console.log('configInfo:', configInfo)
+      console.log('mintBInfo:', mintBInfo)  
+      console.log('isBuy:', isBuy)
+      console.log('isMintCreated:', isMintCreated)  
+      console.log('amount:', amount)  
+      console.log('slippage:', slippage)
       if (isBuy) {
         if (!isMintCreated) {
-          await createAndBuyAct({
-            mint: mintInfo.mint,
-            uri: mintInfo.metadataUrl,
-            name: mintInfo.name,
-            symbol: mintInfo.symbol,
-            decimals: Number(mintInfo.decimals),
-            mintBInfo: mintInfo.mintB,
-            buyAmount: new BN(new Decimal(amount.amountIn || 0).mul(10 ** mintBDecimal).toFixed(0)),
-            slippage: new BN((slippage * 10000).toFixed(0)),
-            migrateType: mintInfo.migrateType,
-            shareFeeReceiver: wallet,
-            configInfo: ToLaunchPadConfig(mintInfo.configInfo),
-            configId: mintInfo.configId,
-            platformFeeRate: new BN(mintInfo.platformInfo.feeRate),
-            totalSellA: new BN(mintInfo.totalSellA),
-            totalFundRaisingB: new BN(mintInfo.totalFundRaisingB),
+          // await createAndBuyAct({
+          //   mint: mintInfo.mint,
+          //   uri: mintInfo.metadataUrl,
+          //   name: mintInfo.name,
+          //   symbol: mintInfo.symbol,
+          //   decimals: Number(mintInfo.decimals),
+          //   mintBInfo: mintInfo.mintB,
+          //   buyAmount: new BN(new Decimal(amount.amountIn || 0).mul(10 ** mintBDecimal).toFixed(0)),
+          //   slippage: new BN((slippage * 10000).toFixed(0)),
+          //   migrateType: mintInfo.migrateType,
+          //   shareFeeReceiver: wallet,
+          //   configInfo: ToLaunchPadConfig(mintInfo.configInfo),
+          //   configId: mintInfo.configId,
+          //   platformFeeRate: new BN(mintInfo.platformInfo.feeRate),
+          //   totalSellA: new BN(mintInfo.totalSellA),
+          //   totalFundRaisingB: new BN(mintInfo.totalFundRaisingB),
 
-            onConfirmed,
-            onFinally: offLoading
-          })
+          //   onConfirmed,
+          //   onFinally: offLoading
+          // })
           return
         }
         await buyAct({
@@ -245,8 +323,8 @@ export default function TradeBox({
           slippage: new BN((slippage * 10000).toFixed(0)),
           shareFeeReceiver: wallet,
 
-          configInfo: ToLaunchPadConfig(mintInfo.configInfo),
-          platformFeeRate: new BN(mintInfo.platformInfo.feeRate),
+          configInfo: poolInfo?.configInfo,
+          platformFeeRate: new BN(platformInfo.feeRate),
           onConfirmed,
           onFinally: offLoading
         })
@@ -260,8 +338,8 @@ export default function TradeBox({
         mintBDecimals: mintBInfo.decimals,
         slippage: new BN((useSwapStore.getState().slippage * 10000).toFixed(0)),
         shareFeeReceiver: wallet,
-        configInfo: ToLaunchPadConfig(mintInfo.configInfo),
-        platformFeeRate: new BN(mintInfo.platformInfo.feeRate),
+        configInfo: poolInfo?.configInfo,
+        platformFeeRate: new BN(platformInfo.feeRate),
         onConfirmed,
         onFinally: offLoading
       })
@@ -275,54 +353,54 @@ export default function TradeBox({
     if (!response || !isLanded) return
     onSending()
 
-    await swapTokenAct({
-      swapResponse: response as ApiSwapV1OutSuccess,
-      inputMint:
-        mintInfo && response.data?.inputMint === mintInfo?.mint
-          ? {
-              chainId: 101,
-              address: mintInfo.mint,
-              programId: TOKEN_PROGRAM_ID.toBase58(),
-              logoURI: mintInfo.imgUrl,
-              symbol: mintInfo.symbol,
-              name: mintInfo.name,
-              decimals: parseFloat(mintInfo.decimals),
-              tags: [],
-              extensions: {}
-            }
-          : response.data?.inputMint === mintBInfo?.address
-          ? mintBInfo
-          : undefined,
-      outputMint:
-        mintInfo && response.data?.outputMint === mintInfo?.mint
-          ? {
-              chainId: 101,
-              address: mintInfo.mint,
-              programId: TOKEN_PROGRAM_ID.toBase58(),
-              logoURI: mintInfo.imgUrl,
-              symbol: mintInfo.symbol,
-              name: mintInfo.name,
-              decimals: parseFloat(mintInfo.decimals),
-              tags: [],
-              extensions: {}
-            }
-          : response.data?.outputMint === mintBInfo?.address
-          ? mintBInfo
-          : undefined,
-      wrapSol: isSolWSol(inputMint),
-      unwrapSol: isSolWSol(outputMint),
-      onCloseToast: offSending,
-      onConfirmed: () => {
-        setAmount({ amountIn: '', amountOut: '', minAmountOut: '' })
-        // setNeedPriceUpdatedAlert(false)
-        offSending()
-      },
-      onError: () => {
-        offSending()
-        mutate()
-      }
-    })
-    offSending()
+    // await swapTokenAct({
+    //   swapResponse: response as ApiSwapV1OutSuccess,
+    //   inputMint:
+    //     mintInfo && response.data?.inputMint === mintInfo?.mint
+    //       ? {
+    //           chainId: 101,
+    //           address: mintInfo.mint,
+    //           programId: TOKEN_PROGRAM_ID.toBase58(),
+    //           logoURI: mintInfo.imgUrl,
+    //           symbol: mintInfo.symbol,
+    //           name: mintInfo.name,
+    //           decimals: parseFloat(mintInfo.decimals),
+    //           tags: [],
+    //           extensions: {}
+    //         }
+    //       : response.data?.inputMint === mintBInfo?.address
+    //       ? mintBInfo
+    //       : undefined,
+    //   outputMint:
+    //     mintInfo && response.data?.outputMint === mintInfo?.mint
+    //       ? {
+    //           chainId: 101,
+    //           address: mintInfo.mint,
+    //           programId: TOKEN_PROGRAM_ID.toBase58(),
+    //           logoURI: mintInfo.imgUrl,
+    //           symbol: mintInfo.symbol,
+    //           name: mintInfo.name,
+    //           decimals: parseFloat(mintInfo.decimals),
+    //           tags: [],
+    //           extensions: {}
+    //         }
+    //       : response.data?.outputMint === mintBInfo?.address
+    //       ? mintBInfo
+    //       : undefined,
+    //   wrapSol: isSolWSol(inputMint),
+    //   unwrapSol: isSolWSol(outputMint),
+    //   onCloseToast: offSending,
+    //   onConfirmed: () => {
+    //     setAmount({ amountIn: '', amountOut: '', minAmountOut: '' })
+    //     // setNeedPriceUpdatedAlert(false)
+    //     offSending()
+    //   },
+    //   onError: () => {
+    //     offSending()
+    //     mutate()
+    //   }
+    // })
+    // offSending()
   }
 
   useEffect(() => {

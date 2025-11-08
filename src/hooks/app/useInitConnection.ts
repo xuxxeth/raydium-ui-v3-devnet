@@ -67,12 +67,12 @@ function useInitConnection(props: SSRData) {
               allSignedTx = await _signAllTransactions(transactions)
             }
             const allBase64Tx = allSignedTx.map(txToBase64)
-            const res = await validateTxData({
-              preData: unsignedTxData,
-              data: allBase64Tx,
-              userSignTime: Date.now() - time
-            })
-            if (!res.success) throw new Error(res.msg)
+            // const res = await validateTxData({
+            //   preData: unsignedTxData,
+            //   data: allBase64Tx,
+            //   userSignTime: Date.now() - time
+            // })
+            // if (!res.success) throw new Error(res.msg)
 
             return allSignedTx
           }
@@ -161,11 +161,11 @@ function useInitConnection(props: SSRData) {
   // update publickey/signAllTransactions in raydium sdk
   useEffect(() => {
     // if user connected wallet, update pubk
-    if (raydium) {
+    if (raydium && wallet?.adapter) {
       raydium.setOwner(publicKey || undefined)
       raydium.setSignAllTransactions(signAllTransactions)
     }
-  }, [raydium, publicKey, signAllTransactions])
+  }, [raydium, publicKey, wallet, signAllTransactions])
 
   // update publickey/wallet in app store
   useEffect(() => {
