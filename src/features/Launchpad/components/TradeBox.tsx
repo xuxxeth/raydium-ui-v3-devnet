@@ -353,54 +353,54 @@ export default function TradeBox({
     if (!response || !isLanded) return
     onSending()
 
-    // await swapTokenAct({
-    //   swapResponse: response as ApiSwapV1OutSuccess,
-    //   inputMint:
-    //     mintInfo && response.data?.inputMint === mintInfo?.mint
-    //       ? {
-    //           chainId: 101,
-    //           address: mintInfo.mint,
-    //           programId: TOKEN_PROGRAM_ID.toBase58(),
-    //           logoURI: mintInfo.imgUrl,
-    //           symbol: mintInfo.symbol,
-    //           name: mintInfo.name,
-    //           decimals: parseFloat(mintInfo.decimals),
-    //           tags: [],
-    //           extensions: {}
-    //         }
-    //       : response.data?.inputMint === mintBInfo?.address
-    //       ? mintBInfo
-    //       : undefined,
-    //   outputMint:
-    //     mintInfo && response.data?.outputMint === mintInfo?.mint
-    //       ? {
-    //           chainId: 101,
-    //           address: mintInfo.mint,
-    //           programId: TOKEN_PROGRAM_ID.toBase58(),
-    //           logoURI: mintInfo.imgUrl,
-    //           symbol: mintInfo.symbol,
-    //           name: mintInfo.name,
-    //           decimals: parseFloat(mintInfo.decimals),
-    //           tags: [],
-    //           extensions: {}
-    //         }
-    //       : response.data?.outputMint === mintBInfo?.address
-    //       ? mintBInfo
-    //       : undefined,
-    //   wrapSol: isSolWSol(inputMint),
-    //   unwrapSol: isSolWSol(outputMint),
-    //   onCloseToast: offSending,
-    //   onConfirmed: () => {
-    //     setAmount({ amountIn: '', amountOut: '', minAmountOut: '' })
-    //     // setNeedPriceUpdatedAlert(false)
-    //     offSending()
-    //   },
-    //   onError: () => {
-    //     offSending()
-    //     mutate()
-    //   }
-    // })
-    // offSending()
+    await swapTokenAct({
+      swapResponse: response as ApiSwapV1OutSuccess,
+      inputMint:
+        mintInfo && response.data?.inputMint === mintInfo?.mint
+          ? {
+              chainId: 101,
+              address: mintInfo.mint,
+              programId: TOKEN_PROGRAM_ID.toBase58(),
+              logoURI: mintInfo.imgUrl,
+              symbol: mintInfo.symbol,
+              name: mintInfo.name,
+              decimals: parseFloat(mintInfo.decimals),
+              tags: [],
+              extensions: {}
+            }
+          : response.data?.inputMint === mintBInfo?.address
+          ? mintBInfo
+          : undefined,
+      outputMint:
+        mintInfo && response.data?.outputMint === mintInfo?.mint
+          ? {
+              chainId: 101,
+              address: mintInfo.mint,
+              programId: TOKEN_PROGRAM_ID.toBase58(),
+              logoURI: mintInfo.imgUrl,
+              symbol: mintInfo.symbol,
+              name: mintInfo.name,
+              decimals: parseFloat(mintInfo.decimals),
+              tags: [],
+              extensions: {}
+            }
+          : response.data?.outputMint === mintBInfo?.address
+          ? mintBInfo
+          : undefined,
+      wrapSol: isSolWSol(inputMint),
+      unwrapSol: isSolWSol(outputMint),
+      onCloseToast: offSending,
+      onConfirmed: () => {
+        setAmount({ amountIn: '', amountOut: '', minAmountOut: '' })
+        // setNeedPriceUpdatedAlert(false)
+        offSending()
+      },
+      onError: () => {
+        offSending()
+        mutate()
+      }
+    })
+    offSending()
   }
 
   useEffect(() => {

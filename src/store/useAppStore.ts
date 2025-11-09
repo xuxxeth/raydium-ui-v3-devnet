@@ -142,7 +142,14 @@ const appInitState = {
   isDesktop: false,
   aprMode: 'M' as 'M' | 'D',
   rpcs: [],
-  urlConfigs: API_URLS,
+  // urlConfigs: API_URLS,
+  urlConfigs: {
+    ...API_URLS,
+    BASE_HOST: 'https://api-v3-devnet.raydium.io',
+    OWNER_BASE_HOST: 'https://owner-v1-devnet.raydium.io',
+    SWAP_HOST: 'https://transaction-v1-devnet.raydium.io',
+    CPMM_LOCK: 'https://dynamic-ipfs-devnet.raydium.io/lock/cpmm/position',
+  },
   // programIdConfig: ALL_PROGRAM_ID,
   programIdConfig: {
     ...ALL_PROGRAM_ID,

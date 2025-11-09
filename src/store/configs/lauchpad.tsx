@@ -3,7 +3,8 @@ import { Text } from '@chakra-ui/react'
 import i18n from '@/i18n'
 import { colors } from '@/theme/cssVariables/colors'
 
-export const PLATFORMID = 'GiecNPBAk5uGsHeqQJSHVu7yivSBjuL4xWJU6hBq8bn9'
+// export const PLATFORMID = 'GiecNPBAk5uGsHeqQJSHVu7yivSBjuL4xWJU6hBq8bn9'
+export const PLATFORMID = 'E6uQXebFeCbS1byjC6sB3HTSscf9VQUs4vX5ciX4BLXu'
 
 const LAUCHPAD_TX_MSG = {
   launchBuy: {

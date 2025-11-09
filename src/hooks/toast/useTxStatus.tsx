@@ -106,7 +106,7 @@ function useTxStatus() {
               <Flex
                 gap="1"
                 alignItems="center"
-                onClick={() => window.open(`${explorerUrl}/tx/${txId}`)}
+                onClick={() => window.open(`${explorerUrl}/tx/${txId}?cluster=devnet`)}
                 cursor={'pointer'}
                 opacity={status ? 1 : 0.5}
               >
@@ -318,7 +318,7 @@ function useTxStatus() {
                     ml="-30px"
                     cursor={txId ? 'pointer' : 'default'}
                     opacity={txId ? 1 : 0.5}
-                    onClick={txId ? () => window.open(`${explorerUrl}/tx/${txId}`) : undefined}
+                    onClick={txId ? () => window.open(`${explorerUrl}/tx/${txId}?cluster=devnet`) : undefined}
                   >
                     <Flex alignItems="center" gap="2">
                       {txStatus[txId] === 'error' ? (

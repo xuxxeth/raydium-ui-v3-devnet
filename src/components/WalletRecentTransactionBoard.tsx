@@ -311,7 +311,7 @@ function RecentTransactionCard({ transaction }: { transaction: RecentTransaction
           {transaction.txId && (
             <ExternalLinkLargeIcon
               cursor="pointer"
-              onClick={() => window.open(`${explorerUrl}/tx/${transaction.txId}`)}
+              onClick={() => window.open(`${explorerUrl}/tx/${transaction.txId}?cluster=devnet`)}
               color={colors.textSecondary}
               width={'16px'}
               height={'16px'}
