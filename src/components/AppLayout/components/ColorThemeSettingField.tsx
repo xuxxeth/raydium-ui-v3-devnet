@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next'
 export function ColorThemeSettingField() {
   const { t } = useTranslation()
   const { colorMode, toggleColorMode } = useColorMode()
-
+  return null
   return (
     <SettingField
       fieldName={t('setting_board.color_theme')}

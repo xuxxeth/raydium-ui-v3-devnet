@@ -37,7 +37,7 @@ module.exports = {
     return [
       {
         source: '/',
-        destination: '/swap/',
+        destination: '/launchpad/',
         permanent: false
       },
       {

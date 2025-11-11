@@ -98,7 +98,7 @@ export default function Launchpad() {
     topMarketCapMints,
     indexTopMint,
     mutate
-  } = useTopMintList({ notRefresh: !showAnimations, includeNsfw: isIncludeNsfw, timeTag: timeRef.current })
+  } = useTopMintList({ notRefresh: !showAnimations, includeNsfw: isIncludeNsfw, timeTag: timeRef.current, platformId: PLATFORMID })
 
   const { isOpen: isCollapseOpen, onToggle: toggleCollapse } = useDisclosure()
   const { isOpen: isMobileSearchOpen, onOpen: openMobileSearch, onClose: closeMobileSearch } = useDisclosure()

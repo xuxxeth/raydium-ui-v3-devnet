@@ -73,7 +73,7 @@ function AppNavLayout({
         {/* logo */}
         <Desktop>
           <Box flex={'none'}>
-            <Link href="/swap">
+            <Link href="/launchpad">
               <RaydiumLogo />
             </Link>
           </Box>
@@ -83,7 +83,8 @@ function AppNavLayout({
             <RaydiumLogoOutline />
             <Text fontSize="xl" fontWeight="medium" color={colors.textSecondary}>
               {pathname === '/swap'
-                ? t('swap.title')
+                ? 
+                t('swap.title')
                 : pathname === '/liquidity-pools'
                 ? t('liquidity.title')
                 : pathname === '/portfolio'
@@ -102,10 +103,10 @@ function AppNavLayout({
         {/* nav routes */}
         <Desktop>
           <HStack flexGrow={1} justify="start" overflow={['auto', 'visible']} gap={[15, 0, 15]}>
-            <RouteLink href="/swap" isActive={pathname === '/swap'} title={t('swap.title')} />
-            <RouteLink href="/liquidity-pools" isActive={pathname.includes('/liquidity')} title={t('liquidity.title')} />
+            {/* <RouteLink href="/swap" isActive={pathname === '/swap'} title={t('swap.title')} /> */}
+            {/* <RouteLink href="/liquidity-pools" isActive={pathname.includes('/liquidity')} title={t('liquidity.title')} /> */}
             <RouteLink href="/portfolio" isActive={pathname === '/portfolio'} title={t('portfolio.title')} />
-            <RouteLink href="https://perps.raydium.io" isActive={false} title={t('perpetuals.title')} />
+            {/* <RouteLink href="https://perps.raydium.io" isActive={false} title={t('perpetuals.title')} /> */}
             <RouteLink
               href={`/launchpad${queryReferrer}`}
               isActive={pathname.includes('/launchpad')}
@@ -119,7 +120,7 @@ function AppNavLayout({
                 gap: '0.25rem'
               }}
             />
-            <Menu size="lg">
+            {/* <Menu size="lg">
               <MenuButton fontSize={'lg'} px={4} py={2}>
                 <Flex
                   align="center"
@@ -131,14 +132,14 @@ function AppNavLayout({
                 </Flex>
               </MenuButton>
               <NavMoreButtonMenuPanel />
-            </Menu>
+            </Menu> */}
           </HStack>
         </Desktop>
 
         {/* wallet button */}
         <Flex gap={[0.5, 2]} align="center">
-          <TorqueButton />
-          <PriorityButton />
+          {/* <TorqueButton />
+          <PriorityButton /> */}
           <SettingsMenu />
           {/* <EVMWallet />  don't need currently yet*/}
           <SolWallet />
