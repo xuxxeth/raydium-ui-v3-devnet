@@ -55,6 +55,7 @@ export interface MintInfo {
   configInfo: ConfigInfo
 
   platformInfo: {
+    creatorFeeRate: string
     feeRate: string
     img: string
     name: string

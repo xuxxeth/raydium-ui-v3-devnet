@@ -40,6 +40,7 @@ export default function Info({
   isLanded: boolean
   refreshMintInfo?: () => void
 }) {
+  console.log('render Info', mintInfo)
   const [finishRate, setFinishRate] = useState(mintInfo?.finishingRate ?? 0)
   const { colorMode } = useColorMode()
   const isLight = colorMode === 'light'
@@ -401,12 +402,14 @@ export default function Info({
           <Flex alignItems="center" justifyContent="space-between" gap={1}>
             Trade Fee:
             <Flex alignItems="center" gap="1">
-              {(Number(mintInfo.configInfo.tradeFeeRate) + Number(mintInfo.platformInfo.feeRate)) / 10000}%
+              {(Number(mintInfo.configInfo.tradeFeeRate) + Number(mintInfo.platformInfo.feeRate) + Number(mintInfo.platformInfo.creatorFeeRate)) / 10000}%
               <Tooltip
                 hasArrow
                 placement="top"
                 label={`Program(${Number(mintInfo.configInfo.tradeFeeRate) / 10000}%) + Platform(${
                   Number(mintInfo.platformInfo.feeRate) / 10000
+                }%) + Creator Fee(${
+                  Number(mintInfo.platformInfo.creatorFeeRate) / 10000
                 }%) `}
               >
                 <QuestionCircleIcon color={colors.lightPurple} />
